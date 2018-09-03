@@ -1,0 +1,18 @@
+# Go dependencies
+/vendor/
+
+# Compiled binaries
+/terraform-provider-concourse*
+
+# Log files
+*.log
+
+
+# Terraform tests
+/*.tf
+.terraform/
+*.tfstate*
+
+# IntelliJ IDEA configuration
+/.idea/
+*.iml
