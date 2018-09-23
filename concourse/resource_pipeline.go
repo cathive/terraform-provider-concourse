@@ -31,7 +31,7 @@ func resourcePipelineCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("pipeline \"%s\" does already exist in team \"%s\"", name, team)
 	}
 
-	_, _, _, err = concourse.CreateOrUpdatePipelineConfig(name, "1", []byte(config))
+	_, _, _, err = concourse.CreateOrUpdatePipelineConfig(name, "1", []byte(config), false) // todo: see issue #3
 	if err != nil {
 		return fmt.Errorf("could not create pipeline config: %v", err)
 	}
@@ -187,7 +187,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("unable to convert pipeline configuration version \"%s\" to number: %v", curConfigVersionStr, err)
 		}
 		if string(curConfig) != config {
-			_, _, _, err = concourse.CreateOrUpdatePipelineConfig(name, strconv.Itoa(curConfigVersion+1), []byte(config))
+			_, _, _, err = concourse.CreateOrUpdatePipelineConfig(name, strconv.Itoa(curConfigVersion+1), []byte(config), false) // todo: see issue #3
 			if err != nil {
 				return fmt.Errorf("unable to update configuration of pipeline \"%s\" of team \"%s\" (current version: %d): %v", name, team, curConfigVersion, err)
 			}
