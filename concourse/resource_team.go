@@ -1,11 +1,10 @@
 package concourse
 
 import (
-		"fmt"
+	"fmt"
 	"github.com/concourse/atc"
-	"github.com/hashicorp/terraform/helper/schema"
-			"encoding/json"
 	"github.com/concourse/go-concourse/concourse"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 // teamIDAsString converts a given numeric team ID, which is required, because Terraform resource data IDs must be
@@ -34,21 +33,21 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	authUsers := d.Get("auth_users").([]interface{})
 	authGroups := d.Get("auth_groups").([]interface{})
 
-	var users, groups json.RawMessage
+	var users, groups []string
 
-	users, err := json.Marshal(authUsers)
-	if err != nil {
-		return fmt.Errorf("unable to parse auth_users: %v", err)
+	for _, user := range authUsers {
+		users = append(users, user.(string))
 	}
-	groups, err = json.Marshal(authGroups)
-	if err != nil {
-		return fmt.Errorf("unable to parse auth_groups: %v", err)
+
+	for _, group := range authGroups {
+		group = append(groups, group.(string))
 	}
+
 	team := atc.Team{
 		Name: name,
-		Auth: map[string]*json.RawMessage{
-			"users": &users,
-			"groups": &groups,
+		Auth: map[string][]string{
+			"users":  users,
+			"groups": groups,
 		},
 	}
 	team, created, updated, err := concourse.Team(name).CreateOrUpdate(team)
@@ -171,20 +170,20 @@ func resourceTeam() *schema.Resource {
 			},
 			"auth_users": {
 				Description: "User access / authorization",
-				Type: schema.TypeList,
+				Type:        schema.TypeList,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
-					MinItems: 0,
+					Type:          schema.TypeString,
+					MinItems:      0,
 					PromoteSingle: true,
 				},
 				Optional: true,
 			},
 			"auth_groups": {
 				Description: "Group access / authorization",
-				Type: schema.TypeList,
+				Type:        schema.TypeList,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
-					MinItems: 0,
+					Type:          schema.TypeString,
+					MinItems:      0,
 					PromoteSingle: true,
 				},
 				Optional: true,
