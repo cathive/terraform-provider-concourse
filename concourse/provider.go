@@ -88,18 +88,18 @@ func configure(d *schema.ResourceData) (interface{}, error) {
 		cfg := FlyRC{}
 		err := cfg.ImportConfig()
 		if err != nil {
-			return nil, fmt.Errorf("fly configuration parse error: %v", err)
+			return nil, fmt.Errorf("unable to parse Fly configuration file (%s): %v", cfg.Filename, err)
 		}
 
 		if len(cfg.Targets) <= 0 {
-			return nil, fmt.Errorf("no targets found in Fly configuration file (%s)", cfgFile.Name())
+			return nil, fmt.Errorf("no targets found in Fly configuration file (%s)", cfg.Filename)
 		}
 		if targetName == "" {
 			return nil, fmt.Errorf("provider argument \"target\" must be specified")
 		}
 		target, exists := cfg.Targets[targetName]
 		if !exists {
-			return nil, fmt.Errorf("unable to find targetName with ID \"%s\" in Fly configuration file %s", targetName, cfgFile.Name())
+			return nil, fmt.Errorf("unable to find targetName with ID \"%s\" in Fly configuration file %s", targetName, cfg.Filename)
 		}
 		concourseURL = target.API
 		if u, err = url.Parse(concourseURL); err != nil {

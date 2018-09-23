@@ -11,6 +11,7 @@ import (
 // FlyRC is a representation of the configuration file structure that is stored by the
 // "fly" command line interface. (Usually to be found in ~/.flyrc)
 type FlyRC struct {
+	Filename string
 	Targets map[string]Target `yaml:"targets"`
 }
 
@@ -28,12 +29,9 @@ type Target struct {
 func (rc *FlyRC) ImportConfig() error {
 	cfg := FlyRC{}
 
-	flyrc_path, err := flyRcLocation()
-	if err != nil {
-		return err
-	}
+	rc.setFlyRcLocation()
 
-	flyrc_contents, err := flyReadConfig(flyrc_path)
+	flyrc_contents, err := rc.readFlyConfig()
 	if err != nil {
 		return err
 	}
@@ -43,29 +41,31 @@ func (rc *FlyRC) ImportConfig() error {
 	return nil
 }
 
-func flyRcLocation() (*string, error) {
+func (rc *FlyRC) setFlyRcLocation() {
+	fallback := ".flyrc" // If all else fails, we'll just return .flyrc in the current directory
+
 	// Check if an ENV var has been set with a path
 	// Todo: Find out if this is the correct ENV var, or if it fly even has one.
 	if flyrc, ok := os.LookupEnv("FLYRC"); ok {
-		return &flyrc, nil
+		rc.Filename = flyrc
 	}
 
 	// Otherwise, return the default flyrc location
 	cu, err := user.Current()
 	if err != nil {
-		return nil, fmt.Errorf("unable to determine current user for reading the .flyrc file: %v", err)
+		rc.Filename = fallback
 	}
 	flyrc := fmt.Sprintf("%s/.flyrc", cu.HomeDir)
-	return &flyrc, nil
+	rc.Filename = flyrc
 }
 
 // Get the bytes of the flyrc config based on the filepath given
-func flyReadConfig(flyrc *string) (*[]byte, error) {
-	if _, err := os.Stat(*flyrc); err != nil {
-		return nil, fmt.Errorf("unable to stat the flyrc file (%s): %v", *flyrc, err)
+func (rc *FlyRC) readFlyConfig() (*[]byte, error) {
+	if _, err := os.Stat(rc.Filename); err != nil {
+		return nil, fmt.Errorf("unable to stat the flyrc file (%s): %v", rc.Filename, err)
 	}
 
-	config_bytes, err := ioutil.ReadFile(*flyrc)
+	config_bytes, err := ioutil.ReadFile(rc.Filename)
 
 	return &config_bytes, err
 }
