@@ -3,28 +3,11 @@ package concourse
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"gopkg.in/yaml.v2"
-	"net/http"
-		"net/url"
-	"os"
-	"os/user"
-	"strings"
 	"golang.org/x/oauth2"
+	"net/http"
+	"net/url"
+	"strings"
 )
-
-// FlyRC is a representation of the configuration file structure that is stored by the
-// "fly" command line interface. (Usually to be found in ~/.flyrc)
-type FlyRC struct {
-	Targets map[string]struct {
-		API      string `yaml:"api"`
-		Team     string `yaml:"team"`
-		Insecure bool   `yaml:"insecure,omitempty"`
-		Token    struct {
-			Type  string `yaml:"type"`
-			Value string `yaml:"value"`
-		} `yaml:"token"`
-	} `yaml:"targets"`
-}
 
 // SkyUserInfo encapsulates all the information that is being reported by the Sky marshal
 // "sky/userinfo" REST endpoint
@@ -61,13 +44,13 @@ func Provider() *schema.Provider {
 				Description:   "Authentication token type",
 				Type:          schema.TypeString,
 				Optional:      true,
-				Default: "Bearer",
+				Default:       "Bearer",
 				ConflictsWith: []string{"target"},
 			},
 			"auth_token_value": {
-				Description: "Authentication token value",
-				Type: schema.TypeString,
-				Optional: true,
+				Description:   "Authentication token value",
+				Type:          schema.TypeString,
+				Optional:      true,
 				ConflictsWith: []string{"target"},
 			},
 			"target": {
@@ -78,7 +61,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"concourse_team": resourceTeam(),
+			"concourse_team":     resourceTeam(),
 			"concourse_pipeline": resourcePipeline(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -102,31 +85,21 @@ func configure(d *schema.ResourceData) (interface{}, error) {
 	// Let's try to read the fly CLI configuration file if the user did not specify
 	// any connection parameters in the provider configuration.
 	if targetName != "" {
-		cu, err := user.Current()
-		if err != nil {
-			return nil, fmt.Errorf("unable to determine current user: %v", err)
-		}
-		cfgFilePath := fmt.Sprintf("%s/.flyrc", cu.HomeDir)
-		if _, err := os.Stat(cfgFilePath); err != nil {
-			return nil, fmt.Errorf("unable to find Fly configuration file (%s): %v", cfgFilePath, err)
-		}
-		cfgFile, err := os.Open(cfgFilePath)
-		if err != nil {
-			return nil, fmt.Errorf("unable to open Fly configuration file (%s): %v", cfgFile.Name(), err)
-		}
 		cfg := FlyRC{}
-		if yaml.NewDecoder(cfgFile).Decode(&cfg); err != nil {
-			return nil, fmt.Errorf("unable to parse Fly configuration file (%s): %v", cfgFile.Name(), err)
+		err := cfg.ImportConfig()
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse Fly configuration file (%s): %v", cfg.Filename, err)
 		}
+
 		if len(cfg.Targets) <= 0 {
-			return nil, fmt.Errorf("no targets found in Fly configuration file (%s)", cfgFile.Name())
+			return nil, fmt.Errorf("no targets found in Fly configuration file (%s)", cfg.Filename)
 		}
 		if targetName == "" {
 			return nil, fmt.Errorf("provider argument \"target\" must be specified")
 		}
 		target, exists := cfg.Targets[targetName]
 		if !exists {
-			return nil, fmt.Errorf("unable to find targetName with ID \"%s\" in Fly configuration file %s", targetName, cfgFile.Name())
+			return nil, fmt.Errorf("unable to find targetName with ID \"%s\" in Fly configuration file %s", targetName, cfg.Filename)
 		}
 		concourseURL = target.API
 		if u, err = url.Parse(concourseURL); err != nil {
@@ -162,7 +135,7 @@ func configure(d *schema.ResourceData) (interface{}, error) {
 
 	}
 	oAuthToken := &oauth2.Token{
-		TokenType: authTokenType,
+		TokenType:   authTokenType,
 		AccessToken: authTokenValue,
 	}
 	transport := &oauth2.Transport{
