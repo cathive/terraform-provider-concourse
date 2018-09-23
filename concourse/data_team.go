@@ -1,4 +1,4 @@
-package main
+package concourse
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
