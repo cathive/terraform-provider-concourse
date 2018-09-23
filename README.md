@@ -5,6 +5,7 @@
 This provider plugin is maintained by:
 
 * Benjamin P. Jung <headcr4sh@gmail.com>
+* Nick Larsen <nick@aptiv.co.nz>
 
 ## Requirements
 
