@@ -47,7 +47,9 @@ func (rc *FlyRc) setFlyRcLocation() {
 	// Check if an ENV var has been set with a path
 	// Todo: Find out if this is the correct ENV var, or if it fly even has one.
 	if flyrc, ok := os.LookupEnv("FLYRC"); ok {
-		rc.Filename = flyrc
+		if len(flyrc) > 0 {
+			rc.Filename = flyrc
+		}
 		return
 	}
 
