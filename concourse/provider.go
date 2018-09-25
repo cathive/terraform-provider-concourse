@@ -85,7 +85,7 @@ func configure(d *schema.ResourceData) (interface{}, error) {
 	// Let's try to read the fly CLI configuration file if the user did not specify
 	// any connection parameters in the provider configuration.
 	if targetName != "" {
-		cfg := FlyRC{}
+		cfg := FlyRc{}
 		err := cfg.ImportConfig()
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse Fly configuration file (%s): %v", cfg.Filename, err)
