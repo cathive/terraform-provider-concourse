@@ -2,32 +2,34 @@ package concourse
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"os/user"
 )
 
-// FlyRC is a representation of the configuration file structure that is stored by the
+// FlyRc is a representation of the configuration file structure that is stored by the
 // "fly" command line interface. (Usually to be found in ~/.flyrc)
-type FlyRC struct {
+type FlyRc struct {
 	Filename string
-	Targets map[string]Target `yaml:"targets"`
+	Targets  map[string]FlyRcTarget `yaml:"targets"`
 }
 
-type Target struct {
-	API      string `yaml:"api"`
-	Team     string `yaml:"team"`
-	Insecure bool   `yaml:"insecure,omitempty"`
-	Token    struct {
-		Type  string `yaml:"type"`
-		Value string `yaml:"value"`
-	} `yaml:"token"`
+type FlyRcTarget struct {
+	API      string           `yaml:"api"`
+	Team     string           `yaml:"team"`
+	Insecure bool             `yaml:"insecure,omitempty"`
+	Token    FlyRcTargetToken `yaml:"token"`
 }
 
-// Reads in a `flyrc` file and returns a FlyRC struct
-func (rc *FlyRC) ImportConfig() error {
-	cfg := FlyRC{}
+type FlyRcTargetToken struct {
+	Type  string `yaml:"type"`
+	Value string `yaml:"value"`
+}
+
+// Reads in a `flyrc` file and returns a FlyRc struct
+func (rc *FlyRc) ImportConfig() error {
+	cfg := FlyRc{}
 
 	rc.setFlyRcLocation()
 
@@ -36,18 +38,19 @@ func (rc *FlyRC) ImportConfig() error {
 		return err
 	}
 
-	yaml.Unmarshal(*flyrc_contents, cfg)
-
-	return nil
+	return yaml.Unmarshal(*flyrc_contents, &cfg)
 }
 
-func (rc *FlyRC) setFlyRcLocation() {
+func (rc *FlyRc) setFlyRcLocation() {
 	fallback := ".flyrc" // If all else fails, we'll just return .flyrc in the current directory
 
 	// Check if an ENV var has been set with a path
 	// Todo: Find out if this is the correct ENV var, or if it fly even has one.
 	if flyrc, ok := os.LookupEnv("FLYRC"); ok {
-		rc.Filename = flyrc
+		if len(flyrc) > 0 {
+			rc.Filename = flyrc
+		}
+		return
 	}
 
 	// Otherwise, return the default flyrc location
@@ -60,7 +63,7 @@ func (rc *FlyRC) setFlyRcLocation() {
 }
 
 // Get the bytes of the flyrc config based on the filepath given
-func (rc *FlyRC) readFlyConfig() (*[]byte, error) {
+func (rc *FlyRc) readFlyConfig() (*[]byte, error) {
 	if _, err := os.Stat(rc.Filename); err != nil {
 		return nil, fmt.Errorf("unable to stat the flyrc file (%s): %v", rc.Filename, err)
 	}
