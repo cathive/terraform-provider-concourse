@@ -6,7 +6,7 @@ import (
 )
 
 func TestFlyRC_ImportConfigFromEnv(t *testing.T) {
-	expected_test_file := "./test_fixtures/flyrc.yml"
+	expected_test_file := "./testdata/flyrc.yml"
 	expected_target_count := 2
 
 	os.Setenv("FLYRC", expected_test_file)
