@@ -12,8 +12,8 @@ data "concourse_task" "task1" {
   config {
     image_resource {
       source {
-        repository = "hashicorp/terraform"
-        tag        = "light"
+        repository = "alpine"
+        tag        = "3.8"
       }
     }
 
