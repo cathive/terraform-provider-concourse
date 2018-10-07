@@ -68,6 +68,7 @@ func Provider() *schema.Provider {
 			"concourse_caller_identity": dataCallerIdentity(),
 			"concourse_server_info":     dataServerInfo(),
 			"concourse_team":            dataTeam(),
+			"concourse_task":			 dataTask(),
 		},
 		ConfigureFunc: configure,
 	}
