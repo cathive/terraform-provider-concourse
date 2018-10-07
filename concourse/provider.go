@@ -3,11 +3,11 @@ package concourse
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
 	"strings"
-	"github.com/hashicorp/terraform/terraform"
 )
 
 // SkyUserInfo encapsulates all the information that is being reported by the Sky marshal
