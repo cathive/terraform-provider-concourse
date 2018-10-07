@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 // SkyUserInfo encapsulates all the information that is being reported by the Sky marshal
@@ -24,7 +25,7 @@ type SkyUserInfo struct {
 }
 
 // Provider creates a new Concourse terraform provider instance.
-func Provider() *schema.Provider {
+func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"concourse_url": {
