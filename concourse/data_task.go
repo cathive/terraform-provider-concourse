@@ -15,7 +15,7 @@ func dataTask() *schema.Resource {
 			"config": {
 				Description: "Concourse Task configuration block",
 				Type:        schema.TypeList, // Todo: remove this? only allow one config block
-				Optional:    true,
+				Required:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
