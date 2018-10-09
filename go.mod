@@ -17,7 +17,6 @@ require (
 	github.com/cloudfoundry/bosh-cli v5.1.2+incompatible // indirect
 	github.com/cloudfoundry/bosh-utils v0.0.0-20180725223622-407dd7546455 // indirect
 	github.com/concourse/atc v3.14.1+incompatible
-	github.com/concourse/go-concourse v0.0.0-20180807180115-3b8daf7f0612
 	github.com/cppforlife/go-patch v0.0.0-20171006213518-250da0e0e68c // indirect
 	github.com/docker/distribution v2.6.2+incompatible // indirect
 	github.com/docker/docker v1.13.1 // indirect
@@ -29,7 +28,6 @@ require (
 	github.com/go-sql-driver/mysql v1.4.0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.2.0 // indirect
-	github.com/google/jsonapi v0.0.0-20170708005851-46d3ced04344 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20180820052304-89baedc74dd7 // indirect
 	github.com/hashicorp/go-cleanhttp v0.0.0-20171218145408-d5fe4b57a186 // indirect
 	github.com/hashicorp/go-getter v0.0.0-20180809191950-4bda8fa99001 // indirect
@@ -65,7 +63,6 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
-	github.com/peterhellberg/link v1.0.0 // indirect
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/posener/complete v1.1.1 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
@@ -74,7 +71,6 @@ require (
 	github.com/tedsuo/ifrit v0.0.0-20180802180643-bea94bb476cc // indirect
 	github.com/tedsuo/rata v1.0.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
-	github.com/vito/go-sse v0.0.0-20160212001227-fd69d275caac // indirect
 	golang.org/x/crypto v0.0.0-20180820150726-614d502a4dac // indirect
 	golang.org/x/net v0.0.0-20180821023952-922f4815f713 // indirect
 	golang.org/x/oauth2 v0.0.0-20180820191322-f720f1faee02
