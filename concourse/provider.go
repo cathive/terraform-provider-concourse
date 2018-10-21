@@ -3,6 +3,7 @@ package concourse
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
@@ -24,7 +25,7 @@ type SkyUserInfo struct {
 }
 
 // Provider creates a new Concourse terraform provider instance.
-func Provider() *schema.Provider {
+func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"concourse_url": {
