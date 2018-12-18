@@ -1,8 +1,8 @@
 package concourse
 
 import (
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestFlyRC_ImportConfigFromEnv(t *testing.T) {

@@ -3,7 +3,7 @@ package concourse
 import (
 	"fmt"
 	"github.com/concourse/atc"
-	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

@@ -3,7 +3,7 @@ package concourse
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/concourse/go-concourse/concourse"
 	"net/http"
 	"net/url"
 )

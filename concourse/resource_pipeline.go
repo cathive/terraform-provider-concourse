@@ -1,8 +1,8 @@
 package concourse
 
 import (
-		"fmt"
-		"github.com/hashicorp/terraform/helper/schema"
+	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
 	"strconv"
 )
 
@@ -131,7 +131,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	team := d.Get("team").(string)
 	concourse := m.(Config).Concourse().Team(team)
 	if d.HasChange("name") {
-		var oldName , newName string
+		var oldName, newName string
 		if o, n := d.GetChange("name"); true {
 			oldName = o.(string)
 			newName = n.(string)
@@ -160,7 +160,6 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("unable to set paused state of pipeline \"%s\" to %v: %v", name, paused, err)
 		}
 	}
-
 
 	if d.HasChange("public") {
 		var fn func(name string) (bool, error)
@@ -254,9 +253,9 @@ func resourcePipeline() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"team": {
 				Description: "Team name",
-				Type: schema.TypeString,
-				Required: true,
-				ForceNew: true, // Movement of pipelines between teams is not supported at the moment
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true, // Movement of pipelines between teams is not supported at the moment
 			},
 			"name": {
 				Description: "Pipeline name",
@@ -265,25 +264,25 @@ func resourcePipeline() *schema.Resource {
 			},
 			"paused": {
 				Description: "Paused",
-				Type: schema.TypeBool,
-				Optional: true,
-				Default: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 			"public": {
 				Description: "Public",
-				Type: schema.TypeBool,
-				Optional: true,
-				Default: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 			"config": {
 				Description: "Pipeline configuration YAML",
-				Type: schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"config_version": {
 				Description: "Pipeline configuration version",
-				Type: schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
