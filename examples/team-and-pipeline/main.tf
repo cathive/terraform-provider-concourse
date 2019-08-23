@@ -6,7 +6,7 @@ resource "concourse_team" "avengers" {
   name = "avengers"
 }
 
-resource "concourse_pipeline" "batman" {
-  team = "${concourse_team.avengers.name}"
-  name = "batman"
+resource "concourse_pipeline" "ironman" {
+  team = concourse_team.avengers.name
+  name = "ironman"
 }

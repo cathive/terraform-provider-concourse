@@ -3,6 +3,7 @@ package concourse
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"reflect"
 	"strconv"
 )
 
@@ -46,12 +47,17 @@ func resourcePipelineCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// We check if the configuration has been created.
-	_, newConfig, configVersion, _, err := concourse.PipelineConfig(name)
+	newConfig, configVersion, _, err := concourse.PipelineConfig(name)
 	if err != nil {
 		return fmt.Errorf("unable to read pipeline config for pipeline \"%s\" in team \"%s\" after attempting to create it: %v", name, team, err)
 	}
-	d.Set("config", string(newConfig))
-	d.Set("config_version", configVersion)
+
+	if err := d.Set("config", newConfig); err != nil {
+		return fmt.Errorf("unable to set 'config': %v", err)
+	}
+	if err := d.Set("config_version", configVersion); err != nil {
+		return fmt.Errorf("unable to set 'config_version' to '%s': %v", configVersion, err)
+	}
 
 	d.SetId(pipelineIDAsString(pipeline.ID))
 
@@ -109,12 +115,16 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 			d.Set("paused", pipeline.Paused)
 			d.Set("public", pipeline.Public)
 
-			_, config, version, _, err := concourse.PipelineConfig(pipeline.Name)
+			config, version, _, err := concourse.PipelineConfig(pipeline.Name)
 			if err != nil {
 				return fmt.Errorf("unable to read configuration of pipeline \"%s\": %v", pipeline.Name, err)
 			}
-			d.Set("config", config.String())
-			d.Set("config_version", version)
+			if err := d.Set("config", config); err != nil {
+				return fmt.Errorf("unable to set 'config': %v", err)
+			}
+			if err := d.Set("config_version", version); err != nil {
+				return fmt.Errorf("unable to set 'config_version' to '%s': %v", version, err)
+			}
 
 			return nil
 		}
@@ -177,7 +187,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if d.HasChange("config") {
 		config := d.Get("config").(string)
-		_, curConfig, curConfigVersionStr, _, err := concourse.PipelineConfig(name)
+		curConfig, curConfigVersionStr, _, err := concourse.PipelineConfig(name)
 		if err != nil {
 			return fmt.Errorf("unable to fetch configuration of pipeline \"%s\" of team \"%s\": %v", name, team, err)
 		}
@@ -185,7 +195,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return fmt.Errorf("unable to convert pipeline configuration version \"%s\" to number: %v", curConfigVersionStr, err)
 		}
-		if string(curConfig) != config {
+		if !reflect.DeepEqual(curConfig, config) {
 			_, _, _, err = concourse.CreateOrUpdatePipelineConfig(name, strconv.Itoa(curConfigVersion+1), []byte(config), false) // todo: see issue #3
 			if err != nil {
 				return fmt.Errorf("unable to update configuration of pipeline \"%s\" of team \"%s\" (current version: %d): %v", name, team, curConfigVersion, err)

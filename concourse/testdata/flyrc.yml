@@ -1,9 +1,0 @@
----
-targets:
-  main:
-    api: http://localhost:8080/
-    team: main
-    insecure: false
-    token:
-      type: Bearer
-      value: abcd

@@ -1,0 +1,23 @@
+dist: trusty
+sudo: required
+
+language: bash
+
+addons:
+  sonarcloud:
+    organization: "cathive"
+
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get install -y jq
+
+cache:
+  directories:
+  - '$HOME/.sonar/cache'
+
+script:
+  - make
+  - sonar-scanner
+
+matrix:
+  fast_finish: true

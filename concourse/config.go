@@ -3,9 +3,10 @@ package concourse
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/concourse/go-concourse/concourse"
+	"github.com/concourse/concourse/skymarshal/skyserver"
 	"net/http"
 	"net/url"
+	"github.com/concourse/concourse/go-concourse/concourse"
 )
 
 // Config provides access to all the stuff that is necessary to properly operate
@@ -14,7 +15,7 @@ type Config interface {
 	Concourse() concourse.Client
 	Version() string
 	WorkerVersion() string
-	UserInfo() *SkyUserInfo
+	UserInfo() *skyserver.UserInfo
 }
 
 type config struct {
@@ -22,7 +23,7 @@ type config struct {
 	insecure      bool
 	team          string
 	client        concourse.Client
-	userInfo      *SkyUserInfo
+	userInfo      *skyserver.UserInfo
 	version       string
 	workerVersion string
 }
@@ -39,7 +40,7 @@ func (c *config) WorkerVersion() string {
 	return c.workerVersion
 }
 
-func (c *config) UserInfo() *SkyUserInfo {
+func (c *config) UserInfo() *skyserver.UserInfo {
 	return c.userInfo
 }
 
@@ -65,7 +66,7 @@ func NewConfig(url *url.URL, httpClient *http.Client, insecure bool, team string
 		return nil, fmt.Errorf("user is not authorized to communuicate with the Concourse CI API server (%s returned status code %d)", userInfoURL, http.StatusUnauthorized)
 	}
 
-	userInfo := &SkyUserInfo{}
+	userInfo := &skyserver.UserInfo{}
 	if err := json.NewDecoder(resp.Body).Decode(userInfo); err != nil {
 		return nil, fmt.Errorf("unable to gather user information: %v", err)
 	}

@@ -1,6 +1,13 @@
 # Go dependencies
 /vendor/
 
+# Compiled stuff
+/.bin/
+
+# sonar-scanner
+/.scannerwork/
+/coverage.out
+
 # Compiled binaries
 /terraform-provider-concourse*
 

@@ -2,6 +2,7 @@ package concourse
 
 import (
 	"fmt"
+	"github.com/concourse/concourse/fly/rc"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"golang.org/x/oauth2"
@@ -9,20 +10,6 @@ import (
 	"net/url"
 	"strings"
 )
-
-// SkyUserInfo encapsulates all the information that is being reported by the Sky marshal
-// "sky/userinfo" REST endpoint
-type SkyUserInfo struct {
-	CSRF     string   `json:"csrf"`
-	Email    string   `json:"email"`
-	Exp      int      `json:"exp"`
-	IsAdmin  bool     `json:"is_admin"`
-	Name     string   `json:"name"`
-	Sub      string   `json:"sub"`
-	Teams    []string `json:"teams"`
-	UserID   string   `json:"user_id"`
-	UserName string   `json:"user_name"`
-}
 
 // Provider creates a new Concourse terraform provider instance.
 func Provider() terraform.ResourceProvider {
@@ -32,33 +19,28 @@ func Provider() terraform.ResourceProvider {
 				Description:   "Concourse URL to authenticate with",
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"target"},
 			},
 			"insecure": {
 				Description:   "Skip verification of the endpoint's SSL certificate",
 				Type:          schema.TypeBool,
 				Default:       false,
 				Optional:      true,
-				ConflictsWith: []string{"target"},
 			},
 			"auth_token_type": {
 				Description:   "Authentication token type",
 				Type:          schema.TypeString,
 				Optional:      true,
 				Default:       "Bearer",
-				ConflictsWith: []string{"target"},
 			},
 			"auth_token_value": {
 				Description:   "Authentication token value",
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"target"},
 			},
 			"target": {
 				Description:   "ID of the concourse target if NOT using any of the other parameters",
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"concourse_url", "insecure", "auth_token_type", "auth_token_value"},
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -86,29 +68,18 @@ func configure(d *schema.ResourceData) (interface{}, error) {
 	// Let's try to read the fly CLI configuration file if the user did not specify
 	// any connection parameters in the provider configuration.
 	if targetName != "" {
-		cfg := FlyRc{}
-		err := cfg.ImportConfig()
+		target, err := rc.LoadTarget(rc.TargetName(targetName), false)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse Fly configuration file (%s): %v", cfg.Filename, err)
+			return nil, fmt.Errorf("unable to load target from flyrc: %v", err)
 		}
 
-		if len(cfg.Targets) <= 0 {
-			return nil, fmt.Errorf("no targets found in Fly configuration file (%s)", cfg.Filename)
-		}
-		if targetName == "" {
-			return nil, fmt.Errorf("provider argument \"target\" must be specified")
-		}
-		target, exists := cfg.Targets[targetName]
-		if !exists {
-			return nil, fmt.Errorf("unable to find targetName with ID \"%s\" in Fly configuration file %s", targetName, cfg.Filename)
-		}
-		concourseURL = target.API
+		concourseURL = target.URL()
 		if u, err = url.Parse(concourseURL); err != nil {
 			return nil, fmt.Errorf("unable to parse URL (%s): %v", concourseURL, err)
 		}
-		insecure = target.Insecure
-		authTokenType = target.Token.Type
-		authTokenValue = target.Token.Value
+		insecure = target.TLSConfig().InsecureSkipVerify
+		authTokenType = target.Token().Type
+		authTokenValue = target.Token().Value
 	} else {
 		cfgMissing := make([]string, 0)
 		if concourseURL == "" {

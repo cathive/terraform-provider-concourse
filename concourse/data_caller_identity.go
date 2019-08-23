@@ -8,7 +8,7 @@ import (
 func dataCallerIdentityRead(d *schema.ResourceData, m interface{}) error {
 	userInfo := m.(Config).UserInfo()
 
-	d.SetId(userInfo.UserID)
+	d.SetId(userInfo.UserId)
 
 	if err := d.Set("user_name", userInfo.UserName); err != nil {
 		return fmt.Errorf("unable to set user_name field: %v", err)

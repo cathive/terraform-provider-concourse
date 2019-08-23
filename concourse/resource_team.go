@@ -2,8 +2,9 @@ package concourse
 
 import (
 	"fmt"
-	"github.com/concourse/atc"
-	"github.com/concourse/go-concourse/concourse"
+	"github.com/concourse/concourse/atc"
+
+	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -30,26 +31,23 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	concourse := m.(Config).Concourse()
 
 	name := d.Get("name").(string)
-	authUsers := d.Get("auth_users").([]interface{})
-	authGroups := d.Get("auth_groups").([]interface{})
-
-	var users, groups []string
-
-	for _, user := range authUsers {
-		users = append(users, user.(string))
-	}
-
-	for _, group := range authGroups {
-		group = append(groups, group.(string))
-	}
 
 	team := atc.Team{
 		Name: name,
-		Auth: map[string][]string{
-			"users":  users,
-			"groups": groups,
-		},
+		Auth: atc.TeamAuth{},
 	}
+	for _, auth := range(d.Get("auth").([]interface{})) {
+		authElem := auth.(struct{
+			scope string
+			users []string
+			groups []string
+		})
+		team.Auth[authElem.scope] = map[string][]string{
+			"users": authElem.users,
+			"groups": authElem.groups,
+		}
+	}
+
 	team, created, updated, err := concourse.Team(name).CreateOrUpdate(team)
 	if err != nil {
 		return fmt.Errorf("could not create team: %v", err)
@@ -110,7 +108,29 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 			if newName != "" && oldName != newName {
 				_, err := concourse.Team(team.Name).RenameTeam(team.Name, newName)
 				if err != nil {
-					return err
+					return fmt.Errorf("unable to rename team %s to %s: %v", oldName, newName, err)
+				}
+				// We store the new name because we might change other properties of the team as well.
+				team.Name = newName
+			}
+			if d.HasChange("auth") {
+				team.Auth = atc.TeamAuth{}
+
+				for _, auth := range(d.Get("auth").([]interface{})) {
+					authElem := auth.(struct{
+						scope string
+						users []string
+						groups []string
+					})
+					team.Auth[authElem.scope] = map[string][]string{
+						"users": authElem.users,
+						"groups": authElem.groups,
+					}
+				}
+
+				team, _, _, err = concourse.Team(newName).CreateOrUpdate(team)
+				if err != nil {
+					return fmt.Errorf("unable to update team %s: %v", newName, err)
 				}
 			}
 			return nil
@@ -168,23 +188,29 @@ func resourceTeam() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"auth_users": {
-				Description: "User access / authorization",
+			"auth": {
+				Description: "Access and authorization settings for users and groups",
 				Type:        schema.TypeList,
-				Elem: &schema.Schema{
-					Type:          schema.TypeString,
-					MinItems:      0,
-					PromoteSingle: true,
-				},
-				Optional: true,
-			},
-			"auth_groups": {
-				Description: "Group access / authorization",
-				Type:        schema.TypeList,
-				Elem: &schema.Schema{
-					Type:          schema.TypeString,
-					MinItems:      0,
-					PromoteSingle: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"role": {
+							Description: "Role within the team",
+							Type: schema.TypeString,
+							Required: true,
+						},
+						"users": {
+							Type: schema.TypeList,
+							Elem: schema.TypeString,
+							Optional: true,
+							PromoteSingle: true,
+						},
+						"groups": {
+							Type: schema.TypeList,
+							Elem: schema.TypeString,
+							Optional: true,
+							PromoteSingle: true,
+						},
+					},
 				},
 				Optional: true,
 			},
